@@ -1,0 +1,22 @@
+{
+  "name": "tcpserver",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SolveEducation/nodejs_tcp_test.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SolveEducation/nodejs_tcp_test/issues"
+  },
+  "homepage": "https://github.com/SolveEducation/nodejs_tcp_test#readme",
+  "dependencies": {
+    "mysql": "^2.15.0"
+  }
+}
