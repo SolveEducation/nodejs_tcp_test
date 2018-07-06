@@ -17,6 +17,12 @@
   },
   "homepage": "https://github.com/SolveEducation/nodejs_tcp_test#readme",
   "dependencies": {
-    "mysql": "^2.15.0"
-  }
+    "@types/node": "^10.5.2",
+    "mysql": "^2.15.0",
+    "reflect-metadata": "^0.1.12",
+    "sails-disk": "^1.0.1",
+    "sails-mysql": "^1.0.0",
+    "waterline": "^0.13.4"
+  },
+  "devDependencies": {}
 }

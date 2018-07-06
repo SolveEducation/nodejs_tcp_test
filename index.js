@@ -82,6 +82,9 @@ var server = net.createServer(function(socket) {
                 }
             }
         }
+
+        let memory = process.memoryUsage().heapUsed / 1024 / 1024;
+        console.log(`The script uses approximately ${memory} MB`);
     });
 
     // Remove the client from the list when it leaves
