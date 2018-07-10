@@ -29,7 +29,14 @@ function reconnect_server() {
             };
             client.write(JSON.stringify(data));
         }else{
-            client.write(input.toString());
+            let data = {
+                'type' : "chat",
+                'user_id' : user_id,
+                'request' : "chat",
+                'message' : input
+            };
+            console.log(data);
+            client.write(JSON.stringify(data));
         }
     });
 

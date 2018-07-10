@@ -53,6 +53,14 @@ function socket_server(orm) {
 
         // Remove the client from the list when it leaves
         socket.on('end', function () {
+            //delete from clients
+            let index_user_leaving = clients.indexOf(socket);
+            if(index_user_leaving!==-1){
+                delete clients[index_user_leaving];
+                delete chat_list[chat_list[index_user_leaving]];
+                delete chat_list[index_user_leaving];
+            }
+            //delete from
             broadcast("Someone left the chat.");
         });
 
