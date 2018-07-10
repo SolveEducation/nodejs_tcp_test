@@ -14,9 +14,13 @@ function socket_server(orm) {
     };
 
     let server = net.createServer(function (socket) {
+        console.log('hahaha hihihihi');
         // Handle incoming messages from clients.
         socket.on('data', function (data) {
             let data_from_client = data.toString();
+            console.log(data_from_client);
+            data_from_client = data_from_client.trim();
+            data_from_client = data_from_client.replace(/\0/g, '')
             try {
                 data_from_client = JSON.parse(data_from_client);
                 response.type = "auth";
@@ -48,6 +52,7 @@ function socket_server(orm) {
             } catch (e) {
                 response.message = "Error: " + e.toString();
                 socket.write(JSON.stringify(response));
+		console.log(JSON.stringify(response));
             }
         });
 
