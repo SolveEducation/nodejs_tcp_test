@@ -15,6 +15,7 @@ Waterline.start({
     },
     models: {
         db_login: {
+            tableName: 'DB_Login',
             attributes: {
                 Record_KEY: {type: 'number', required: true},
                 User_ID: {type: 'number'},

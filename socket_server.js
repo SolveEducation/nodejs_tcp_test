@@ -14,12 +14,16 @@ function socket_server(orm) {
     };
 
     let server = net.createServer(function (socket) {
+        console.log("Ada yang konek masse");
+
         // Handle incoming messages from clients.
         socket.on('data', function (data) {
+            socket.setEncoding("utf8");
             let data_from_client = data.toString();
             try {
                 data_from_client = JSON.parse(data_from_client);
                 response.type = "auth";
+
                 Waterline.getModel('db_login', orm).findOne({Record_KEY: data_from_client.user_id},
                     function (err, record) {
                         if (err) {
