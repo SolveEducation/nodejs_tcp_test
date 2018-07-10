@@ -14,16 +14,16 @@ function socket_server(orm) {
     };
 
     let server = net.createServer(function (socket) {
-        console.log("Ada yang konek masse");
-
+        console.log('hahaha hihihihi');
         // Handle incoming messages from clients.
         socket.on('data', function (data) {
-            socket.setEncoding("utf8");
             let data_from_client = data.toString();
+            console.log(data_from_client);
+            data_from_client = data_from_client.trim();
+            data_from_client = data_from_client.replace(/\0/g, '')
             try {
                 data_from_client = JSON.parse(data_from_client);
                 response.type = "auth";
-
                 Waterline.getModel('db_login', orm).findOne({Record_KEY: data_from_client.user_id},
                     function (err, record) {
                         if (err) {
@@ -52,6 +52,7 @@ function socket_server(orm) {
             } catch (e) {
                 response.message = "Error: " + e.toString();
                 socket.write(JSON.stringify(response));
+		console.log(JSON.stringify(response));
             }
         });
 
