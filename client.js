@@ -4,7 +4,7 @@ const readline = require('readline');
 
 reconnect_server();
 function reconnect_server() {
-    client.connect(1337, '54.255.239.36', function(){
+    client.connect(1337, '127.0.0.1', function(){
         if(interval_reconnect!==null){
             clearInterval(interval_reconnect);
         }
@@ -23,17 +23,18 @@ function reconnect_server() {
             input = input.toString();
             user_id = input;
             let data = {
-                'type' : "chat",
+                'type' : "matchmaking",
                 'user_id' : input,
-                'request' : "register"
+                'game_id' : 1,
+                'action' : "findgame"
             };
             client.write(JSON.stringify(data));
         }else{
             let data = {
-                'type' : "chat",
+                'type' : "matchmaking",
                 'user_id' : user_id,
-                'request' : "chat",
-                'message' : input
+                'game_id' : 1,
+                'request' : "findgame"
             };
             console.log(data);
             client.write(JSON.stringify(data));
