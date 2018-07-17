@@ -13,6 +13,9 @@ let DB_Login_Collection = Waterline.Collection.extend({
         User_ID: {type: 'number'},
         User_Name: {type: 'string'},
         Chat_Name: {type: 'string'},
+        User_Service_ID: {type: 'string'},
+        User_Password: {type: 'string'},
+        User_Email: {type: 'string'},
     }
 });
 
@@ -23,12 +26,14 @@ let DB_Game_Lounge_Collection = Waterline.Collection.extend({
     datastore: 'default',
     attributes: {
         Record_KEY: {type: 'number', autoMigrations: { autoIncrement: true } },
-        User_ID: {type: 'number'},
+        User_ID: {model: 'DB_Login'},
         Game_ID: {type: 'number'},
         Time: {type: 'number'},
         Status: {type: 'number'},
         Data: {type: 'string'},
-        Session_ID: {type: 'number'},
+        Session_ID: {
+            model: "DB_Sessions"
+        },
     }
 });
 
@@ -42,6 +47,11 @@ let DB_Sessions_Collection = Waterline.Collection.extend({
         Game_ID: {type: 'number'},
         Created_At: {type: 'number'},
         Data: {type: 'string'},
+
+        users: {
+            collection: 'DB_Game_Lounge',
+            via: 'Session_ID'
+        }
     }
 });
 

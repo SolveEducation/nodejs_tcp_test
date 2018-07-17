@@ -17,8 +17,8 @@ function reconnect_server() {
     var interval_reconnect = null;
     var user_id = null;
 
-    console.log("What is your User ID?");
     rl.on('line', (input) => {
+        /*
         if(user_id == null){
             input = input.toString();
             user_id = input;
@@ -39,6 +39,8 @@ function reconnect_server() {
             console.log(data);
             client.write(JSON.stringify(data));
         }
+        */
+        client.write(input.toString())
     });
 
     client.on('data', function(data) {

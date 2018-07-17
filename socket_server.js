@@ -1,4 +1,6 @@
 let net = require('net');
+let getCurrentID = require('./library/getCurrentID');
+let getSession = require('./library/getSession');
 
 let response = {
     "type": "response",
@@ -26,31 +28,75 @@ function socket_server(ontology) {
         // Handle incoming messages from clients.
         socket.on('data', function (data) {
             let data_from_client = data.toString();
-            console.log(data_from_client);
             data_from_client = data_from_client.trim();
             data_from_client = data_from_client.replace(/\0/g, '');
             try {
-                data_from_client = JSON.parse(data_from_client);
-                response.type = "auth";
-
+                try{
+                    data_from_client = JSON.parse(data_from_client);
+                }catch (e) {
+                    data_from_client = JSON.parse('{"' + decodeURI(data_from_client.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}')
+                }
+                let current_id = getCurrentID(socket,clients);
                 (async ()=>{
-                    let user = await DB_Login.findOne({Record_KEY: data_from_client.user_id});
-                    console.log(user);
-                    if(typeof (user) === "undefined"){
-                        response.message = "User not found";
+                    if(current_id === false ){
+                        if(data_from_client.module === "auth"){
+                            let user = undefined;
+                            if("service_id" in data_from_client){
+                                user = await DB_Login.findOne({User_Service_ID: data_from_client.service_id});
+                            }else{
+                                user = await DB_Login.findOne({User_Email: data_from_client.email, User_Password: data_from_client.password });
+                            }
+                            if(typeof user==="undefined"){
+                                //auth failed
+                                socket.write(JSON.stringify({
+                                    type : 'auth',
+                                    done: 0,
+                                    Message : "Authentication failed"
+                                }));
+                            }else{
+                                //auth success
+                                if(getSession(user.User_ID,clients)){
+                                    socket.write(JSON.stringify({
+                                        module : 'auth',
+                                        type : 'auth',
+                                        done: -1,
+                                        Message : "User is already authenticated"
+                                    }));
+                                }else{
+                                    socket.user_detail = user;
+                                    clients.push(socket);
+                                    socket.write(JSON.stringify({
+                                        module : 'auth',
+                                        type : 'auth',
+                                        done: 1,
+                                        Message : "User is authenticated"
+                                    }));
+                                }
+                            }
+                        }else{
+                            //call is forbidden. Not authenticated yet
+                            socket.write(JSON.stringify({
+                                module : 'auth',
+                                type : 'auth',
+                                done: -1,
+                                Message : "User is forbidden"
+                            }));
+                        }
                     }else{
-                        socket.user_detail = user;
-                        clients[user.User_ID] = socket;
-                        if (data_from_client.type === "chat") {
-                            let Chat = require('./types_handler/chat');
-                            Chat(socket, ontology, clients, data_from_client);
-                        }else if(data_from_client.type === "matchmaking"){
+                        console.log(data_from_client);
+                        if (data_from_client.module === "session") {
+                            let Session = require('./types_handler/session');
+                            Session(socket, ontology, clients, data_from_client);
+                        }else if(data_from_client.module === "matchmaking"){
                             let Matchmaking = require('./types_handler/matchmaking');
                             Matchmaking(socket, ontology, clients, data_from_client);
                         }else{
-                            response.type = "request";
-                            response.message = "Request not found";
-                            socket.write(JSON.stringify(response));
+                            socket.write(JSON.stringify({
+                                module : 'auth',
+                                type : 'request',
+                                done : 0,
+                                message : "Request is Invalid"
+                            }));
                         }
                     }
                 })().then(()=>{
@@ -91,7 +137,6 @@ function socket_server(ontology) {
             } catch (e) {
                 response.message = "Error: " + e.toString();
                 socket.write(JSON.stringify(response));
-		console.log(JSON.stringify(response));
             }
         });
 
