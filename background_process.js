@@ -6,7 +6,7 @@ module.exports = function (ontology, clients) {
 
     (async () => {
         while (true === true) {
-            let lounges = await DB_Game_Lounge.find({Status: 0});
+            let lounges = await DB_Game_Lounge.find({Status: 0}).populate("Game_ID");
             for (let lounge of lounges) {
                 let lounge_session = getSession(lounge.User_ID, clients);
                 lounge = await DB_Game_Lounge.findOne({Record_KEY: lounge.Record_KEY});
@@ -45,14 +45,15 @@ module.exports = function (ontology, clients) {
                             Game_ID: lounge.Game_ID,
                             User_ID: {'!=': lounge.User_ID}
                         });
-                        if (lounges_candidate.length > 0) {
+
+                        //number of user needed
+                        if (lounges_candidate.length > lounge.Game_ID.Min_User_Per_Session - 1) {
                             let random_number = Math.floor(Math.random() * lounges_candidate.length);
                             let match = lounges_candidate[random_number];
                             //check is offline or not
                             let match_session = getSession(match.User_ID, clients);
 
                             if (match_session !== false && lounge_session !== false) {
-
                                 //create a new game session
                                 let session = await DB_Sessions.create({
                                     Game_ID: lounge.Game_ID,

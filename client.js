@@ -9,43 +9,20 @@ function reconnect_server() {
             clearInterval(interval_reconnect);
         }
     });
+
     let rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
     });
     //54.169.52.26
     var interval_reconnect = null;
-    var user_id = null;
 
     rl.on('line', (input) => {
-        /*
-        if(user_id == null){
-            input = input.toString();
-            user_id = input;
-            let data = {
-                'type' : "matchmaking",
-                'user_id' : input,
-                'game_id' : 1,
-                'action' : "findgame"
-            };
-            client.write(JSON.stringify(data));
-        }else{
-            let data = {
-                'type' : "matchmaking",
-                'user_id' : user_id,
-                'game_id' : 1,
-                'request' : "findgame"
-            };
-            console.log(data);
-            client.write(JSON.stringify(data));
-        }
-        */
         client.write(input.toString())
     });
 
     client.on('data', function(data) {
         console.log(data.toString());
-        //client.destroy(); // kill client after server's response
     });
 
     client.on('error', function(err) {
@@ -57,19 +34,3 @@ function reconnect_server() {
         
     });
 }
-
-/*
-    Request Chat:
-    {
-        'type' : 'chat',
-        'user_id' : 488,
-        'request' : 'register'
-        'message' : ''
-    },
-    {
-        'type' : 'chat',
-        'user_id' : 488,
-        'request' : 'reply'
-        'message' : ''
-    }
- */

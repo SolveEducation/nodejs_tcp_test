@@ -27,7 +27,7 @@ let DB_Game_Lounge_Collection = Waterline.Collection.extend({
     attributes: {
         Record_KEY: {type: 'number', autoMigrations: { autoIncrement: true } },
         User_ID: {model: 'DB_Login'},
-        Game_ID: {type: 'number'},
+        Game_ID: {model: 'DB_Async_Games'},
         Time: {type: 'number'},
         Status: {type: 'number'},
         Data: {type: 'string'},
@@ -44,9 +44,13 @@ let DB_Sessions_Collection = Waterline.Collection.extend({
     datastore: 'default',
     attributes: {
         Session_ID: {type: 'number', autoMigrations: { autoIncrement: true } },
-        Game_ID: {type: 'number'},
+        Game_ID: {
+            model: "DB_Async_Games"
+        },
         Created_At: {type: 'number'},
         Data: {type: 'string'},
+        Status: {type: 'number'},
+        Is_Bot: {type: 'number'},
 
         users: {
             collection: 'DB_Game_Lounge',
@@ -55,9 +59,24 @@ let DB_Sessions_Collection = Waterline.Collection.extend({
     }
 });
 
+let DB_Async_Games = Waterline.Collection.extend({
+    identity: 'DB_Async_Games',
+    tableName: 'DB_Async_Games',
+    primaryKey: 'Game_ID',
+    datastore: 'default',
+    attributes: {
+        Game_ID: {type: 'number', autoMigrations: { autoIncrement: true } },
+        Game_Name: {type: 'string'},
+        Max_User_Per_Session: {type: 'number'},
+        Allow_Bot: {type: 'number'},
+        Min_User_Per_Session: {type: 'number'},
+    }
+});
+
 waterline.registerModel(DB_Game_Lounge_Collection);
 waterline.registerModel(DB_Login_Collection);
 waterline.registerModel(DB_Sessions_Collection);
+waterline.registerModel(DB_Async_Games);
 
 var config = {
     adapters: {
@@ -82,51 +101,3 @@ waterline.initialize(config, (err, ontology)=> {
     }
     socket_server(ontology);
 });
-
-
-
-/*
-Waterline.start({
-    adapters: {
-        'sails-mysql': MySQLAdapter,
-    },
-    datastores: {
-        default: {
-            adapter: 'sails-mysql',
-            url: 'mysql://citygame:citypass@localhost:3306/citygame',
-        },
-    },
-    models: {
-        db_login: {
-            tableName: 'DB_Login',
-            attributes: {
-                Record_KEY: {type: 'number', required: true},
-                User_ID: {type: 'number'},
-                User_Name: {type: 'string'},
-                Chat_Name: {type: 'string'},
-            }
-        },
-        db_game_lounge: {
-            tableName: 'DB_Game_Lounge',
-            attributes: {
-                Record_KEY: {type: 'number', required: true},
-                User_ID: {type: 'number'},
-                Game_ID: {type: 'number'},
-                Time: {type: 'number'},
-                Status: {type: 'number'},
-                Data: {type: 'string'},
-            }
-        },
-    },
-    defaultModelSettings: {
-        primaryKey: 'Record_KEY',
-        datastore: 'default'
-    }
-}, function(err, orm) {
-    if (err) {
-        console.log('Could not start up the ORM:\n', err);
-    }else{
-        socket_server(orm);
-    }
-});
-*/
