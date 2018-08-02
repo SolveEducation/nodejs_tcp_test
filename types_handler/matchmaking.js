@@ -12,16 +12,26 @@ module.exports = function (session, ontology, clients, data_from_client) {
             let check_params =  checkParameter(data_from_client, ["gameid"]);
             if(check_params !== ""){
                 session.write(JSON.stringify({
-                    module: 'session',
-                    type: 'setData',
+                    module: data_from_client.module,
+                    type: data_from_client.type,
                     done: 0,
                     message: "Parameter(s) are incomplete : "+ check_params
                 }));
                 return;
             }
             //check if there is any user in lounge
-            let game = DB_Async_Games.findOne({Game_ID : game_id});
-            console.log(game);
+            let game = await DB_Async_Games.find({Game_ID : game_id});
+            if(game.length === 0){
+                session.write(JSON.stringify({
+                    module: data_from_client.module,
+                    type: data_from_client.type,
+                    done: 0,
+                    message: "Game ID is not valid"
+                }));
+                return;
+            }
+
+
             if (user_id !== false) {
                 //DB_Game_Lounge
                 let lounge = await DB_Game_Lounge.findOne({Game_ID: game_id, User_ID: user_id, Status: 0});

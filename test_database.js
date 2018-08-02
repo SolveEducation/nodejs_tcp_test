@@ -34,6 +34,7 @@ let DB_Game_Lounge_Collection = Waterline.Collection.extend({
         Session_ID: {
             model: "DB_Sessions"
         },
+        Is_Bot: {type: 'number'},
     }
 });
 

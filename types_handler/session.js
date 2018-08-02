@@ -7,75 +7,82 @@ module.exports = function (session, ontology, clients, data_from_client) {
     let DB_Login = ontology.collections.db_login;
     let user_id = getCurrentID(session, clients);
     (async () => {
-        if (data_from_client.type === "join") {
-            let check_params =  checkParameter(data_from_client, ["session_id"]);
-            if(check_params !== ""){
-                session.write(JSON.stringify({
-                    module: 'session',
-                    type: 'join',
-                    done: 0,
-                    message: "Parameter(s) are incomplete : "+ check_params
-                }));
-                return;
-            }
+        let check_main_params =  checkParameter(data_from_client, ["session_id","type"]);
+        if(check_main_params !== ""){
+            session.write(JSON.stringify({
+                module: data_from_client.module,
+                type: data_from_client.type,
+                done: 0,
+                message: "Parameter(s) are incomplete : "+ check_main_params
+            }));
+            return;
+        }
+        let session_id = data_from_client.session_id;
+        let query_session = {Session_ID: session_id};
+        if(data_from_client.type !== "getData"){
+            query_session.Status = 0
+        }
 
-            let session_id = data_from_client.session_id;
+        let sessions = await DB_Sessions.findOne(query_session).populate("Game_ID").populate("users");
+        if(typeof sessions === "undefined"){
+            session.write(JSON.stringify({
+                module: data_from_client.module,
+                type: data_from_client.type,
+                done: "0",
+                message: "Session is not found/valid",
+            }));
+            return;
+        }
+
+        if (data_from_client.type === "join") {
             //search is session exists or not
             let sessions = await DB_Sessions.findOne({Session_ID: session_id}).populate("Game_ID").populate("users");
             let users = await DB_Game_Lounge.find({Session_ID: session_id});
             let user_id = getCurrentID(session, clients);
 
-            if (typeof sessions === "undefined") {
-                session.write(JSON.stringify({
-                    module: "session",
-                    type: "join",
-                    done: "0",
-                    message: "Session not found",
-                }));
-            } else {
-                console.log(sessions);
-                let old_user = false;
-                for(let user of users){
-                    if(user.User_ID === user_id){
-                        old_user = true;
-                        if(user.Status===4){
-                            user = JSON.parse(JSON.stringify(user));
-                            await DB_Game_Lounge.update({Record_KEY: user.Record_KEY}, user);
-                        }
-                        break;
+
+            let old_user = false;
+            for(let user of users){
+                if(user.User_ID === user_id){
+                    old_user = true;
+                    if(user.Status===4){
+                        user = JSON.parse(JSON.stringify(user));
+                        await DB_Game_Lounge.update({Record_KEY: user.Record_KEY}, user);
                     }
+                    break;
                 }
-                let message_success = "Already on this session";
-                if(old_user===false){
-                    //makes sure how many users on this session
-                    if(sessions.users.length >= sessions.Game_ID.Max_User_Per_Session){
-                        session.write(JSON.stringify({
-                            module: "session",
-                            type: "join",
-                            done: "0",
-                            message: "Session is full",
-                        }));
-                        return 0;
-                    }
-                    //create a new user for this session
-                    await DB_Game_Lounge.create({
-                        User_ID: user_id,
-                        Game_ID: sessions.Game_ID.Game_ID,
-                        Time: Math.floor(new Date().getTime()/1000),
-                        Status: 1,
-                        Session_ID: sessions.Session_ID,
-                        Data: ''
-                    }).fetch();
-                    message_success = "Added to the session";
-                }
-                session.write(JSON.stringify({
-                    module: "session",
-                    type: "join",
-                    done: "1",
-                    session_id: sessions.Session_ID,
-                    message: message_success,
-                }));
             }
+            let message_success = "Already on this session";
+            if(old_user===false){
+                //makes sure how many users on this session
+                if(sessions.users.length >= sessions.Game_ID.Max_User_Per_Session){
+                    session.write(JSON.stringify({
+                        module: "session",
+                        type: "join",
+                        done: "0",
+                        message: "Session is full",
+                    }));
+                    return 0;
+                }
+                //create a new user for this session
+                await DB_Game_Lounge.create({
+                    User_ID: user_id,
+                    Game_ID: sessions.Game_ID.Game_ID,
+                    Time: Math.floor(new Date().getTime()/1000),
+                    Status: 1,
+                    Session_ID: sessions.Session_ID,
+                    Data: ''
+                }).fetch();
+                message_success = "Added to the session";
+            }
+            session.write(JSON.stringify({
+                module: "session",
+                type: "join",
+                done: "1",
+                session_id: sessions.Session_ID,
+                message: message_success,
+            }));
+
         } else if (data_from_client.type === "players") {
             let check_params =  checkParameter(data_from_client, ["session_id"]);
             if(check_params !== ""){
@@ -91,7 +98,7 @@ module.exports = function (session, ontology, clients, data_from_client) {
             let sessions = await DB_Sessions.findOne({Session_ID: session_id}).populate("users");
             let user_sessions = await DB_Game_Lounge.count({User_ID: user_id, Session_ID: session_id});
 
-            if(user_sessions == 0){
+            if(user_sessions === 0){
                 session.write(JSON.stringify({
                     module: "session",
                     type: "players",
@@ -144,7 +151,7 @@ module.exports = function (session, ontology, clients, data_from_client) {
             let sessions = await DB_Sessions.findOne({Session_ID: session_id}).populate("users");
 
             let user_sessions = await DB_Game_Lounge.count({User_ID: user_id, Session_ID: session_id});
-            if(user_sessions == 0){
+            if(user_sessions === 0){
                 session.write(JSON.stringify({
                     module: "session",
                     type: "getData",
@@ -212,11 +219,13 @@ module.exports = function (session, ontology, clients, data_from_client) {
                 let dataType = data_from_client.dataType;
                 if(dataType==="session"){
                     await DB_Sessions.update({Session_ID: sessions.Session_ID}, {Data: data_from_client.data});
+                }else if(dataType==="status"){
+                    await DB_Sessions.update({Session_ID: sessions.Session_ID}, {Status: parseInt(data_from_client.data)});
                 }else{
                     //find the record key
                     let current_id = getCurrentID(session, clients);
                     for(let user of sessions.users){
-                        if(user.User_ID === current_id){
+                        if(user.User_ID === current_id) {
                             let data_client = JSON.parse(user.Data);
                             data_client.data = data_from_client.data;
                             await DB_Game_Lounge.update({Record_KEY: user.Record_KEY}, {Data: JSON.stringify(data_client)});
