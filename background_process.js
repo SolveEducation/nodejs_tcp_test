@@ -3,16 +3,24 @@ let getSession = require('./library/getSession');
 module.exports = function (ontology, clients) {
     let DB_Game_Lounge = ontology.collections.db_game_lounge;
     let DB_Sessions = ontology.collections.db_sessions;
-
+    function sleep(ms){
+        return new Promise(resolve=>{
+            setTimeout(resolve,ms)
+        })
+    }
     (async () => {
         //doing this process forever
         while (true === true) {
             let lounges = await DB_Game_Lounge.find({Status: 0}).populate("Game_ID");
+            if(lounges.length===0){
+                await sleep(7*1000);
+                continue;
+            }
             for (let lounge of lounges) {
                 let lounge_session = getSession(lounge.User_ID, clients);
                 lounge = await DB_Game_Lounge.findOne({Record_KEY: lounge.Record_KEY}).populate("Game_ID");
                 //check for timeout
-                if (lounge.Time + 10 < Math.floor(new Date().getTime() / 1000)) {
+                if (lounge.Time + 15 < Math.floor(new Date().getTime() / 1000)) {
                     //if timeout and online, then create a new session with bot if it's okay
                     if(lounge.Game_ID.Allow_Bot === 1){
                         let min_user_per_session = lounge.Game_ID.Min_User_Per_Session;
