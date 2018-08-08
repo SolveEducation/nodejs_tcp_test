@@ -25,6 +25,9 @@ function socket_server(ontology) {
 
 
     let server = net.createServer(function (socket) {
+
+        socket.write("Success Connection");
+
         // Handle incoming messages from clients.
         socket.on('data', function (data) {
             let data_from_client = data.toString();

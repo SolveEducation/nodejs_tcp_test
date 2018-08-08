@@ -4,7 +4,7 @@ const readline = require('readline');
 
 reconnect_server();
 function reconnect_server() {
-    client.connect(1337, '127.0.0.1', function(){
+    client.connect(1337, 'localhost', function(){
         if(interval_reconnect!==null){
             clearInterval(interval_reconnect);
         }

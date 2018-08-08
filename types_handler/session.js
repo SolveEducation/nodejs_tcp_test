@@ -111,15 +111,17 @@ module.exports = function (session, ontology, clients, data_from_client) {
                 let list_of_players = [];
                 console.log(sessions.users);
                 for (let user of sessions.users){
+
                     let user_detail =  await DB_Login.findOne({User_ID: user.User_ID});
                     let user_session = getSession(user.User_ID, clients);
                     list_of_players.push({
                         User_ID : user.User_ID,
                         Status : user.Status,
                         Online_Status : user_session!==false,
-                        Chat_Name : user_detail.Chat_Name,
-                        User_Name : user_detail.User_Name
+                        Chat_Name : typeof(user_detail)==="undefined" ? null : user_detail.Chat_Name,
+                        User_Name : typeof(user_detail)==="undefined" ? null : user_detail.User_Name,
                     })
+
                 }
                 session.write(JSON.stringify({
                     module: "session",

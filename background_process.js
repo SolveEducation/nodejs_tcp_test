@@ -37,11 +37,20 @@ module.exports = function (ontology, clients) {
                         }else{
                             //check bots
                             let sessions = await DB_Game_Lounge.find({
-                                User_ID: lounge.User_ID
+                                User_ID: lounge.User_ID,
+                            });
+
+                            let sessionActive = await DB_Sessions.find({
+                                "Status" : 0
                             });
 
                             let sess = [];
                             for(let ses of sessions){
+                                if(ses.Session_ID !== null){
+                                    sess.push(ses.Session_ID);
+                                }
+                            }
+                            for(let ses of sessionActive){
                                 if(ses.Session_ID !== null){
                                     sess.push(ses.Session_ID);
                                 }
@@ -98,6 +107,7 @@ module.exports = function (ontology, clients) {
                                     Game_ID: lounge.Game_ID.Game_ID,
                                     Created_At: lounge.Time,
                                     Data: "",
+                                    Status: 0,
                                 }).fetch();
 
                                 for(let lou of users){
@@ -113,8 +123,9 @@ module.exports = function (ontology, clients) {
                                     lou.Game_ID = lounge.Game_ID.Game_ID;
                                     lou = JSON.parse(JSON.stringify(lou));
                                     await DB_Game_Lounge.update({Record_KEY: lou.Record_KEY}, lou);
+                                    let sess_us = getSession(lou.User_ID, clients);
 
-                                    lounge_session.write(JSON.stringify({
+                                    sess_us.write(JSON.stringify({
                                         "module":"matchmaking",
                                         "type":"findgame",
                                         "session":session.Session_ID,
@@ -188,6 +199,7 @@ module.exports = function (ontology, clients) {
                                     Game_ID: lounge.Game_ID.Game_ID,
                                     Created_At: lounge.Time,
                                     Data: "",
+                                    Status: 0,
                                 }).fetch();
 
                                 for(let lounge of users){
@@ -228,6 +240,7 @@ module.exports = function (ontology, clients) {
                                     Game_ID: lounge.Game_ID,
                                     Created_At: lounge.Time,
                                     Data: "",
+                                    Status: 0,
                                 }).fetch();
 
                                 lounge.Data = JSON.stringify({
