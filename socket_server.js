@@ -112,8 +112,11 @@ function socket_server(ontology) {
                             }));
                         }
                     } else {
-                        console.log(data_from_client);
                         if (data_from_client.module === "session") {
+                           socket.write({
+                               "module": "ping"
+                           })
+                        }else if (data_from_client.module === "session") {
                             let Session = require('./types_handler/session');
                             Session(socket, ontology, clients, data_from_client);
                         } else if (data_from_client.module === "matchmaking") {
