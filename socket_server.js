@@ -43,7 +43,11 @@ function socket_server(ontology) {
                 console.log(current_id);
                 (async () => {
                     if (current_id === false) {
-                        if (data_from_client.module === "auth") {
+                        if (data_from_client.module === "ping") {
+                            socket.write({
+                                "module": "ping"
+                            })
+                        }else if (data_from_client.module === "auth") {
                             if (data_from_client.type === "login") {
                                 let user = undefined;
                                 let check_UNAP = checkParameter(data_from_client, ["email","password"]);
@@ -112,7 +116,7 @@ function socket_server(ontology) {
                             }));
                         }
                     } else {
-                        if (data_from_client.module === "session") {
+                        if (data_from_client.module === "ping") {
                            socket.write({
                                "module": "ping"
                            })
