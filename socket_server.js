@@ -44,9 +44,9 @@ function socket_server(ontology) {
                 (async () => {
                     if (current_id === false) {
                         if (data_from_client.module === "ping") {
-                            socket.write({
+                            socket.write(JSON.stringify({
                                 "module": "ping"
-                            })
+                            }))
                         }else if (data_from_client.module === "auth") {
                             if (data_from_client.type === "login") {
                                 let user = undefined;
@@ -117,9 +117,9 @@ function socket_server(ontology) {
                         }
                     } else {
                         if (data_from_client.module === "ping") {
-                           socket.write({
-                               "module": "ping"
-                           })
+                            socket.write(JSON.stringify({
+                                "module": "ping"
+                            }))
                         }else if (data_from_client.module === "session") {
                             let Session = require('./types_handler/session');
                             Session(socket, ontology, clients, data_from_client);
